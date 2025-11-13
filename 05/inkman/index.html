@@ -50,6 +50,9 @@
 
       let effect; 
 
+      let controller;
+      const tempMatrix = new THREE.Matrix4();
+
       const intersection = {
         intersects: false,
         point: new THREE.Vector3(),
@@ -154,6 +157,23 @@
         mouseHelper.visible = false;
         scene.add( mouseHelper );
 
+
+        controller = renderer.xr.getController( 0 );
+        scene.add(controller);
+
+        controller.addEventListener( 'selectstart', function() {
+
+
+          // check for intersection
+
+
+
+
+        } );
+
+
+
+
         window.addEventListener( 'resize', onWindowResize );
 
         let moved = false;
@@ -202,6 +222,30 @@
           mouse.y = - ( y / window.innerHeight ) * 2 + 1;
 
           raycaster.setFromCamera( mouse, camera );
+
+          checkIntersection2();
+
+        }
+
+        function checkIntersectionFromController( controller ) {
+
+          if ( mesh === undefined ) return;
+
+          tempMatrix.identity().extractRotation( controller.matrixWorld );
+
+          raycaster.ray.origin.setFromMatrixPosition( controller.matrixWorld );
+          raycaster.ray.direction.set( 0, 0, -1 ).applyMatrix4( tempMatrix ); 
+
+          checkIntersection2();
+
+
+        }
+
+
+        function checkIntersection2(  ) {
+
+          if ( mesh === undefined ) return;
+
           raycaster.intersectObject( mesh, false, intersects );
 
           if ( intersects.length > 0 ) {
@@ -266,6 +310,7 @@
           } );
 
           scene.add( mesh );
+          mesh.position.set(0,0,-200);
           mesh.scale.set( 10, 10, 10 );
 
         } );
