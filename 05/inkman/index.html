@@ -36,12 +36,19 @@
       import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
       import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 
+      import { AnaglyphEffect } from 'three/addons/effects/AnaglyphEffect.js';
+
+      import {VRButton} from 'three/addons/webxr/VRButton.js';
+
+
       const container = document.getElementById( 'container' );
 
       let renderer, scene, camera, stats;
       let mesh;
       let raycaster;
       let line;
+
+      let effect; 
 
       const intersection = {
         intersects: false,
@@ -88,14 +95,28 @@
       };
 
       init();
-      animate();
+      // animate();
+
+      renderer.setAnimationLoop(animate);
 
       function init() {
 
         renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
-        container.appendChild( renderer.domElement );
+
+
+        renderer.xr.enabled = true;
+        renderer.xr.setReferenceSpaceType('local-floor');
+
+        document.body.appendChild( renderer.domElement );
+
+        document.body.appendChild(VRButton.createButton(renderer));
+
+
+
+        effect = new AnaglyphEffect( renderer );
+        effect.setSize( window.innerWidth, window.innerHeight );
 
         stats = new Stats();
         container.appendChild( stats.dom );
@@ -293,11 +314,14 @@
 
       }
 
-      function animate() {
+      function animate(time) {
 
-        requestAnimationFrame( animate );
+        // requestAnimationFrame( animate );
 
         renderer.render( scene, camera );
+
+        // effect.render( scene, camera );
+
 
         stats.update();
 
