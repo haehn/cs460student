@@ -1,0 +1,60 @@
+<html>
+  <head>
+    <title>HELLO CUBE</title>
+    <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
+
+    <style>
+    	body {
+    		background-color: black;
+    	}
+    </style>
+
+    <script>
+    	window.onload = function() {
+
+    		// XTK CODE
+    		r = new X.renderer3D();
+    		r.init();
+
+    		c = new X.cube();
+    		c.lengthX = 100;
+    		c.lengthY = 100;
+    		c.lengthZ = 100;
+    		c.center = [30, 10, 0]; // x y z
+
+			c2 = new X.cube();
+			c2.color = [0,0,1]; // r g b
+    		// c2.center = [0, 0, 0];    		
+
+			for (var i=0; i<10; ++i) {
+
+	    		c3 = new X.cube();
+	    		c3.center = [0, 0, 10 + 30*i];
+	    	
+	    		c3.color = [0,1,0];
+
+	    		r.add(c3);
+
+			}
+
+    		// c.color = [1, 0, 0]; // r g b
+
+    		r.add(c);
+    		r.add(c2);
+    		
+
+    		s = new X.sphere();
+    		s.center = [200,0,0];
+    		r.add(s);
+
+
+
+    		r.render();
+
+    	}
+    </script>
+
+  </head>
+  <body>
+  </body>
+</html>
