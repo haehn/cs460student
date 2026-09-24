@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS460 Assignment 2 - Kinetic Pink Cube Art</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html, body {
+        background-color: #06040a;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden !important;
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        color: #ffffff;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      /* Ambient space vignette with subtle pink cosmic glow */
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none;
+        background: radial-gradient(circle at 50% 50%, rgba(255, 20, 147, 0.08) 0%, rgba(18, 8, 25, 0.4) 50%, rgba(6, 4, 10, 0.95) 90%);
+        z-index: 1;
+      }
+
+      /* Subtle warp speed guide tunnel rings in CSS */
+      #tunnel-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none;
+        z-index: 2;
+        background: 
+          radial-gradient(circle at 50% 50%, transparent 0%, transparent 60%, rgba(255, 105, 180, 0.03) 61%, transparent 63%),
+          radial-gradient(circle at 50% 50%, transparent 0%, transparent 80%, rgba(255, 20, 147, 0.02) 81%, transparent 83%);
+      }
+
+      /* CS460 Standard Header */
+      #header-container {
+        position: absolute;
+        top: 16px;
+        left: 20px;
+        z-index: 10;
+        pointer-events: none;
+      }
+
+      #header {
+        margin: 0;
+        padding: 0;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #ff69b4 0%, #ff1493 50%, #ffffff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 25px rgba(255, 20, 147, 0.4);
+      }
+
+      .subtitle {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 2.5px;
+        color: #ffb7c5;
+        margin-top: 4px;
+        text-transform: uppercase;
+      }
+
+      /* CS460 Standard Logo */
+      #logo {
+        position: absolute;
+        top: 14px;
+        right: 20px;
+        z-index: 10;
+        filter: drop-shadow(0 0 12px rgba(255, 105, 180, 0.4));
+        transition: transform 0.3s ease;
+      }
+
+      #logo:hover {
+        transform: scale(1.05);
+      }
+
+      #logo img {
+        height: 60px;
+        display: block;
+      }
+
+      /* Glassmorphic Control & Telemetry Panel */
+      #hud-panel {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        z-index: 10;
+        background: rgba(18, 10, 24, 0.82);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 105, 180, 0.3);
+        border-radius: 14px;
+        padding: 16px 20px;
+        width: 410px;
+        max-width: calc(100vw - 40px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.75), 0 0 30px rgba(255, 20, 147, 0.15);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      /* Current Shade Showcase Banner */
+      .shade-banner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 105, 180, 0.25);
+        border-radius: 10px;
+        padding: 10px 14px;
+      }
+
+      .shade-swatch {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 15px rgba(255, 105, 180, 0.8);
+        flex-shrink: 0;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .shade-info {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .shade-name {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: #ffffff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .shade-details {
+        font-size: 11px;
+        font-family: monospace;
+        color: #ffb7c5;
+        margin-top: 2px;
+      }
+
+      /* Controls Row */
+      .panel-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 8px;
+        color: #fce7f3;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+      }
+
+      .btn:hover {
+        background: rgba(255, 105, 180, 0.25);
+        border-color: #ff69b4;
+        color: #ffffff;
+        box-shadow: 0 0 15px rgba(255, 105, 180, 0.45);
+        transform: translateY(-1px);
+      }
+
+      .btn:active {
+        transform: translateY(1px);
+      }
+
+      .btn.active {
+        background: linear-gradient(135deg, rgba(255, 20, 147, 0.4), rgba(255, 105, 180, 0.4));
+        border-color: #ff1493;
+        color: #ffffff;
+        box-shadow: 0 0 18px rgba(255, 20, 147, 0.5);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, rgba(255, 20, 147, 0.3), rgba(255, 105, 180, 0.3));
+        border-color: rgba(255, 105, 180, 0.6);
+      }
+
+      /* Sliders & Option Controls */
+      .slider-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 11px;
+        color: #ffc2d1;
+        width: 100%;
+      }
+
+      .slider-control label {
+        min-width: 65px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .slider-control input[type=range] {
+        flex: 1;
+        accent-color: #ff1493;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 2px;
+        outline: none;
+      }
+
+      .slider-val {
+        font-family: monospace;
+        font-size: 11px;
+        min-width: 42px;
+        text-align: right;
+        color: #ffffff;
+      }
+
+      /* Live Telemetry Bar */
+      .telemetry {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 11px;
+        color: #ffb7c5;
+        border: 1px solid rgba(255, 105, 180, 0.2);
+      }
+
+      .status-pill {
+        display: inline-block;
+        padding: 2px 7px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        background: rgba(255, 20, 147, 0.25);
+        color: #ff85cb;
+        border: 1px solid rgba(255, 105, 180, 0.5);
+      }
+
+      /* Keyboard Shortcuts Tag */
+      #shortcuts-legend {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10;
+        background: rgba(18, 10, 24, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 105, 180, 0.2);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 11px;
+        color: #e2c2d2;
+        line-height: 1.6;
+        pointer-events: none;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .key {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 10px;
+        font-family: monospace;
+        color: #ffffff;
+        margin: 0 2px;
+      }
+
+      /* Flyby Toast Notification */
+      #toast {
+        position: absolute;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        background: rgba(255, 20, 147, 0.85);
+        backdrop-filter: blur(8px);
+        color: #ffffff;
+        padding: 8px 18px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        box-shadow: 0 0 25px rgba(255, 20, 147, 0.7);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 100;
+      }
+
+      #toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      @media (max-width: 768px) {
+        #shortcuts-legend { display: none; }
+        #hud-panel { width: calc(100% - 30px); left: 15px; bottom: 15px; }
+      }
+    </style>
+
+    <!-- XTK 3D Library -->
+    <script type="text/javascript" src="https://get.goxtk.com/xtk_edge.js"></script>
+
+    <script type="text/javascript">
+      window.onload = function() {
+
+        // ==========================================
+        // 1. RICH CATALOG OF SHADES OF PINK
+        // ==========================================
+        var PINK_SHADES = [
+          { name: "Hot Pink", hex: "#FF69B4", rgb: [1.0, 0.412, 0.706], desc: "Vibrant, high-energy neon pink" },
+          { name: "Deep Pink", hex: "#FF1493", rgb: [1.0, 0.078, 0.576], desc: "Intense, saturated magenta-pink" },
+          { name: "Bubblegum Pink", hex: "#FF85CB", rgb: [1.0, 0.522, 0.796], desc: "Sweet, playful candy pink" },
+          { name: "Neon Pink", hex: "#FF10F0", rgb: [1.0, 0.063, 0.941], desc: "Electric cyber glow pink" },
+          { name: "Barbie Pink", hex: "#DA1884", rgb: [0.855, 0.094, 0.518], desc: "Iconic saturated fashion pink" },
+          { name: "Flamingo Pink", hex: "#FC8EAC", rgb: [0.988, 0.557, 0.675], desc: "Tropical warm coral-pink" },
+          { name: "Cherry Blossom", hex: "#FFB7C5", rgb: [1.0, 0.718, 0.773], desc: "Delicate spring sakura pink" },
+          { name: "Pastel Pink", hex: "#FFD1DC", rgb: [1.0, 0.820, 0.863], desc: "Soft soothing baby pink" },
+          { name: "Cotton Candy", hex: "#FFBCD9", rgb: [1.0, 0.737, 0.851], desc: "Fluffy carnival spun sugar pink" },
+          { name: "Fuchsia Dream", hex: "#FF00FF", rgb: [1.0, 0.0, 1.0], desc: "Pure vivid fuchsia-pink" },
+          { name: "Rose Quartz", hex: "#F7CAC9", rgb: [0.969, 0.792, 0.788], desc: "Mineral crystalline soft pink" },
+          { name: "Coral Pink", hex: "#F88379", rgb: [0.973, 0.514, 0.475], desc: "Warm sunlit peachy pink" },
+          { name: "Magenta Rose", hex: "#F533A6", rgb: [0.961, 0.200, 0.651], desc: "Deep blooming floral magenta" },
+          { name: "Raspberry Pink", hex: "#E25098", rgb: [0.886, 0.314, 0.596], desc: "Rich berry tart pink" },
+          { name: "Baker-Miller Pink", hex: "#FF91AF", rgb: [1.0, 0.569, 0.686], desc: "Psychological tranquilizing pink" },
+          { name: "Electric Pink", hex: "#FF0490", rgb: [1.0, 0.016, 0.565], desc: "Laser beam fluorescent pink" },
+          { name: "French Rose", hex: "#F64A8A", rgb: [0.965, 0.290, 0.541], desc: "Classic Parisian rose pink" },
+          { name: "Lavender Pink", hex: "#FBAED2", rgb: [0.984, 0.682, 0.824], desc: "Cool floral violet-infused pink" },
+          { name: "Carnation Pink", hex: "#FFA6C9", rgb: [1.0, 0.651, 0.788], desc: "Traditional botanical carnation" },
+          { name: "Persian Pink", hex: "#F77FBE", rgb: [0.969, 0.498, 0.745], desc: "Exotic rose carpet pink" },
+          { name: "Thulian Pink", hex: "#DE6FA1", rgb: [0.871, 0.435, 0.631], desc: "Historical Nordic antique pink" },
+          { name: "Cyclamen Pink", hex: "#F56FA1", rgb: [0.961, 0.435, 0.631], desc: "Alpine floral magenta-pink" },
+          { name: "Tickle Me Pink", hex: "#FC89AC", rgb: [0.988, 0.537, 0.675], desc: "Playful bright crayon pink" },
+          { name: "Ultra Pink", hex: "#FF6FFF", rgb: [1.0, 0.435, 1.0], desc: "Hyper-saturated radiant pink" },
+          { name: "Brink Pink", hex: "#FB607F", rgb: [0.984, 0.376, 0.498], desc: "Energetic crimson-edge pink" },
+          { name: "Millennial Pink", hex: "#FAC2C2", rgb: [0.980, 0.761, 0.761], desc: "Minimalist dusty blush" },
+          { name: "Rose Gold", hex: "#E8A2A9", rgb: [0.910, 0.635, 0.663], desc: "Metallic shimmering luxury pink" },
+          { name: "Blush Pink", hex: "#DE5D83", rgb: [0.871, 0.365, 0.514], desc: "Warm romantic rouge pink" },
+          { name: "Watermelon Pink", hex: "#FD6C9E", rgb: [0.992, 0.424, 0.620], desc: "Crisp summer fruit pink" },
+          { name: "Cyberpunk Pink", hex: "#FF007F", rgb: [1.0, 0.0, 0.498], desc: "High-contrast synthetic pink" },
+          { name: "Kobi Pink", hex: "#E79FC4", rgb: [0.906, 0.624, 0.769], desc: "Muted lavender-rose pink" },
+          { name: "Cameo Pink", hex: "#EFBBCC", rgb: [0.937, 0.733, 0.800], desc: "Vintage powdery cameo pink" }
+        ];
+
+        // Helper HSV to RGB conversion
+        function hsvToRgb(h, s, v) {
+          var r, g, b, i, f, p, q, t;
+          i = Math.floor(h * 6);
+          f = h * 6 - i;
+          p = v * (1 - s);
+          q = v * (1 - f * s);
+          t = v * (1 - (1 - f) * s);
+          switch (i % 6) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5: r = v; g = p; b = q; break;
+          }
+          return [r, g, b];
+        }
+
+        function rgbToHex(r, g, b) {
+          var toHex = function(n) {
+            var h = Math.round(n * 255).toString(16);
+            return h.length === 1 ? '0' + h : h;
+          };
+          return ('#' + toHex(r) + toHex(g) + toHex(b)).toUpperCase();
+        }
+
+        // Procedural generator fallback for limitless pink variations
+        function generateProceduralPink() {
+          var hue = 0.87 + Math.random() * 0.10; // Pink hue spectrum
+          var sat = 0.45 + Math.random() * 0.52;
+          var val = 0.85 + Math.random() * 0.15;
+          var rgb = hsvToRgb(hue, sat, val);
+          var hex = rgbToHex(rgb[0], rgb[1], rgb[2]);
+          return {
+            name: "Procedural Pink #" + Math.floor(Math.random() * 9000 + 1000),
+            hex: hex,
+            rgb: rgb,
+            desc: "Procedural hue variation"
+          };
+        }
+
+        var shadeIndex = 0;
+        function getNextShade() {
+          if (shadeIndex < PINK_SHADES.length) {
+            var s = PINK_SHADES[shadeIndex];
+            shadeIndex++;
+            return s;
+          } else {
+            // Once all 32 curated shades have completed, generate new procedural shades
+            return generateProceduralPink();
+          }
+        }
+
+        // ==========================================
+        // 2. INITIALIZE XTK 3D RENDERER
+        // ==========================================
+        var r = new X.renderer3D();
+        r.init();
+
+        // Default Camera facing straight down Z-axis
+        var DEFAULT_CAM_POS = [0, 0, 480];
+        r.camera.position = [DEFAULT_CAM_POS[0], DEFAULT_CAM_POS[1], DEFAULT_CAM_POS[2]];
+        r.camera.focus = [0, 0, 0];
+        r.camera.up = [0, 1, 0];
+
+        // ==========================================
+        // 3. FLIGHT GEOMETRY & TRAJECTORY PARAMETERS
+        // ==========================================
+        var START_Z = -1350;  // Spawns far in background (Step 1: small pink cube)
+        var FLYBY_Z = 510;    // Passes camera plane (Step 2: flies towards and past)
+        var cubeSize = 65;    // Base cube dimension
+        var currentZ = START_Z;
+        var flightSpeed = 5.5; // Controllable flight velocity
+        var rotSpeedX = 1.8;   // Auto-rotation rates in degrees (Step 3: auto-rotate)
+        var rotSpeedY = 2.4;
+        var rotSpeedZ = 1.3;
+        var rotMultiplier = 1.0;
+        var cubesFlown = 0;
+        var isPaused = false;
+        var autoOrbit = false;
+        var soundEnabled = false;
+
+        // Active Pink Cube reference
+        var currentCube = null;
+        var currentShade = null;
+
+        // UI Element References
+        var swatchEl = document.getElementById('swatch');
+        var shadeNameEl = document.getElementById('shade-name');
+        var shadeDetailsEl = document.getElementById('shade-details');
+        var cubesFlownEl = document.getElementById('cubes-flown');
+        var fpsCounterEl = document.getElementById('fps-counter');
+        var statusBadgeEl = document.getElementById('status-badge');
+        var toastEl = document.getElementById('toast');
+        var speedSlider = document.getElementById('speed-slider');
+        var speedValEl = document.getElementById('speed-val');
+        var rotSlider = document.getElementById('rot-slider');
+        var rotValEl = document.getElementById('rot-val');
+        var btnPlay = document.getElementById('btn-play');
+        var btnOrbit = document.getElementById('btn-orbit');
+        var btnSound = document.getElementById('btn-sound');
+        var btnNext = document.getElementById('btn-next');
+        var btnResetCam = document.getElementById('btn-reset-cam');
+
+        function updateHUD(shade) {
+          swatchEl.style.backgroundColor = shade.hex;
+          swatchEl.style.boxShadow = '0 0 18px ' + shade.hex;
+          shadeNameEl.textContent = shade.name;
+          var rgbStr = Math.round(shade.rgb[0]*255) + ', ' + Math.round(shade.rgb[1]*255) + ', ' + Math.round(shade.rgb[2]*255);
+          shadeDetailsEl.textContent = shade.hex + ' • RGB(' + rgbStr + ')';
+          cubesFlownEl.textContent = cubesFlown + ' FLOWN';
+        }
+
+        function showFlybyToast(shade) {
+          toastEl.textContent = '✈️ Flyby #' + cubesFlown + ' — New: ' + shade.name;
+          toastEl.style.background = shade.hex;
+          toastEl.classList.add('show');
+          setTimeout(function() {
+            toastEl.classList.remove('show');
+          }, 1800);
+        }
+
+        // ==========================================
+        // 4. CUBE CREATION & SPAWN ROUTINE
+        // (Step 4: create a new one in a different shade of pink)
+        // ==========================================
+        function spawnPinkCube(isInitial) {
+          // If there is an existing cube that flew by, remove and clean up
+          if (currentCube) {
+            r.remove(currentCube);
+            try {
+              currentCube.destroy();
+            } catch(e) {}
+          }
+
+          // Pick the next shade of pink
+          currentShade = getNextShade();
+
+          // Create brand new XTK cube
+          currentCube = new X.cube();
+          currentCube.lengthX = cubeSize;
+          currentCube.lengthY = cubeSize;
+          currentCube.lengthZ = cubeSize;
+          currentCube.center = [0, 0, 0];
+          currentCube.color = currentShade.rgb;
+
+          // Apply a random initial tumble orientation on a clean identity matrix,
+          // then write the translation directly into matrix slots 12/13/14 so that
+          // the Z position is not folded into the rotation transform.
+          currentCube.transform.rotateX(Math.random() * 360);
+          currentCube.transform.rotateY(Math.random() * 360);
+          currentZ = START_Z;
+          currentCube.transform.matrix[12] = 0;
+          currentCube.transform.matrix[13] = 0;
+          currentCube.transform.matrix[14] = currentZ;
+          currentCube.transform.modified();
+
+          // Add to XTK renderer, then immediately lock scene centroid to origin
+          // so XTK doesn't auto-compute a shifted center from the cube's world position.
+          r.add(currentCube);
+          r.u = [0, 0, 0];
+
+          // Update HUD
+          updateHUD(currentShade);
+
+          if (!isInitial) {
+            showFlybyToast(currentShade);
+            playSound('spawn');
+          }
+        }
+
+        // ==========================================
+        // 5. AMBIENT SPATIAL REFERENCE DUST STARS
+        // ==========================================
+        // Adding 40 subtle reference dust cubes creates visceral depth cues as the pink cube flies past
+        for (var d = 0; d < 40; d++) {
+          var star = new X.cube();
+          star.lengthX = 3.5;
+          star.lengthY = 3.5;
+          star.lengthZ = 3.5;
+          var ang = Math.random() * Math.PI * 2;
+          var rad = 140 + Math.random() * 260;
+          star.transform.matrix[12] = Math.cos(ang) * rad;
+          star.transform.matrix[13] = Math.sin(ang) * rad;
+          star.transform.matrix[14] = -1400 + Math.random() * 1800;
+          star.color = [0.85, 0.75, 0.88];
+          star.transform.modified();
+          r.add(star);
+        }
+
+        // ==========================================
+        // 6. SYNTHESIZED WEB AUDIO (SOUND FX)
+        // ==========================================
+        var audioCtx = null;
+        function initAudio() {
+          if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+        }
+
+        function playSound(type) {
+          if (!soundEnabled) return;
+          try {
+            initAudio();
+            if (!audioCtx) return;
+            var now = audioCtx.currentTime;
+
+            if (type === 'whoosh') {
+              // Spatial Doppler Flyby Whoosh
+              var osc = audioCtx.createOscillator();
+              var gain = audioCtx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(320, now);
+              osc.frequency.exponentialRampToValueAtTime(75, now + 0.38);
+              gain.gain.setValueAtTime(0.14, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+              osc.connect(gain);
+              gain.connect(audioCtx.destination);
+              osc.start(now);
+              osc.stop(now + 0.38);
+            } else if (type === 'spawn') {
+              // Celestial Chime on New Cube Creation
+              [523.25, 659.25, 783.99, 1046.5].forEach(function(freq, idx) {
+                var osc = audioCtx.createOscillator();
+                var gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                var st = now + idx * 0.05;
+                osc.frequency.setValueAtTime(freq, st);
+                gain.gain.setValueAtTime(0.07, st);
+                gain.gain.exponentialRampToValueAtTime(0.001, st + 0.4);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(st);
+                osc.stop(st + 0.4);
+              });
+            }
+          } catch(e) {}
+        }
+
+        // Initialize the first pink cube
+        spawnPinkCube(true);
+
+        // ==========================================
+        // 7. REAL-TIME RENDER & ANIMATION LOOP
+        // ==========================================
+        var lastTime = performance.now();
+        var frameCount = 0;
+
+        r.onRender = function() {
+          var now = performance.now();
+          frameCount++;
+          if (now - lastTime >= 1000) {
+            fpsCounterEl.textContent = frameCount + ' FPS';
+            frameCount = 0;
+            lastTime = now;
+          }
+
+          if (isPaused || !currentCube) return;
+
+          // 1. Advance Cube Along Flight Path towards Camera (Step 2: flying towards camera)
+          currentZ += flightSpeed;
+          currentCube.transform.matrix[14] = currentZ;
+
+          // 2. Auto-Rotate Cube Along Axes (Step 3: auto-rotate)
+          currentCube.transform.rotateX(rotSpeedX * rotMultiplier);
+          currentCube.transform.rotateY(rotSpeedY * rotMultiplier);
+          currentCube.transform.rotateZ(rotSpeedZ * rotMultiplier);
+
+          currentCube.transform.modified();
+
+          // Lock XTK scene centroid to origin every frame — prevents the renderer
+          // from auto-shifting the camera target as the cube moves along Z, which
+          // would push the cube off-screen as it approaches the camera.
+          r.u = [0, 0, 0];
+
+          // 3. Check If Cube Has Flown Past Camera (Step 4)
+          if (currentZ >= FLYBY_Z) {
+            cubesFlown++;
+            playSound('whoosh');
+            // Create a new cube in a different shade of pink and keep doing this!
+            spawnPinkCube(false);
+          }
+
+          // Optional Auto-Orbit Camera Mode
+          if (autoOrbit) {
+            r.camera.rotate([0.4, 0]);
+          }
+        };
+
+        // Render scene
+        r.render();
+
+        // ==========================================
+        // 8. INTERACTIVE HUD CONTROLS & LISTENERS
+        // ==========================================
+        function togglePause() {
+          isPaused = !isPaused;
+          btnPlay.classList.toggle('active', isPaused);
+          btnPlay.innerHTML = isPaused ? '<span>▶️</span> Resume' : '<span>⏸️</span> Pause';
+          statusBadgeEl.textContent = isPaused ? 'PAUSED' : 'FLYING • AUTO-LOOP';
+        }
+
+        function triggerNextCube() {
+          cubesFlown++;
+          playSound('whoosh');
+          spawnPinkCube(false);
+        }
+
+        function resetCamera() {
+          r.camera.position = [DEFAULT_CAM_POS[0], DEFAULT_CAM_POS[1], DEFAULT_CAM_POS[2]];
+          r.camera.focus = [0, 0, 0];
+          r.camera.up = [0, 1, 0];
+        }
+
+        function toggleCameraOrbit() {
+          autoOrbit = !autoOrbit;
+          btnOrbit.classList.toggle('active', autoOrbit);
+        }
+
+        function toggleSound() {
+          soundEnabled = !soundEnabled;
+          if (soundEnabled) initAudio();
+          btnSound.classList.toggle('active', soundEnabled);
+          btnSound.innerHTML = soundEnabled ? '<span>🔊</span> Sound ON' : '<span>🔇</span> Sound OFF';
+          if (soundEnabled) playSound('spawn');
+        }
+
+        // Sliders
+        speedSlider.addEventListener('input', function(e) {
+          flightSpeed = parseFloat(e.target.value);
+          speedValEl.textContent = flightSpeed.toFixed(1) + 'x';
+        });
+
+        rotSlider.addEventListener('input', function(e) {
+          rotMultiplier = parseFloat(e.target.value);
+          rotValEl.textContent = rotMultiplier.toFixed(1) + 'x';
+        });
+
+        // Buttons
+        btnPlay.addEventListener('click', togglePause);
+        btnNext.addEventListener('click', triggerNextCube);
+        btnResetCam.addEventListener('click', resetCamera);
+        btnOrbit.addEventListener('click', toggleCameraOrbit);
+        btnSound.addEventListener('click', toggleSound);
+
+        // Keyboard Shortcuts
+        window.addEventListener('keydown', function(e) {
+          var key = e.key.toLowerCase();
+          if (key === ' ' || e.code === 'Space') {
+            e.preventDefault();
+            togglePause();
+          } else if (key === 'n') {
+            triggerNextCube();
+          } else if (key === 'r') {
+            resetCamera();
+          } else if (key === 'o') {
+            toggleCameraOrbit();
+          } else if (key === 'm') {
+            toggleSound();
+          } else if (key === '1') {
+            flightSpeed = 3.0;
+            speedSlider.value = flightSpeed;
+            speedValEl.textContent = '3.0x';
+          } else if (key === '2') {
+            flightSpeed = 5.5;
+            speedSlider.value = flightSpeed;
+            speedValEl.textContent = '5.5x';
+          } else if (key === '3') {
+            flightSpeed = 10.0;
+            speedSlider.value = flightSpeed;
+            speedValEl.textContent = '10.0x';
+          }
+        });
+
+      };
+    </script>
+  </head>
+  <body>
+    <!-- Subtle speed overlay tunnel ring -->
+    <div id="tunnel-overlay"></div>
+
+    <!-- CS460 Standard Header -->
+    <div id="header-container">
+      <h1 id="header">CS460 Assignment 2</h1>
+      <div class="subtitle">Pink Cube Kinetic Art &bull; XTK</div>
+    </div>
+
+    <!-- CS460 Course Logo -->
+    <div id="logo">
+      <img src="gfx/cs460.png" alt="CS460 Logo">
+    </div>
+
+    <!-- Toast Notification for Flyby -->
+    <div id="toast">✈️ Flyby! New Pink Shade</div>
+
+    <!-- Interactive HUD Deck -->
+    <div id="hud-panel">
+      <!-- Active Pink Shade Showcase Banner -->
+      <div class="shade-banner">
+        <div id="swatch" class="shade-swatch" style="background-color: #FF69B4;"></div>
+        <div class="shade-info">
+          <div id="shade-name" class="shade-name">Hot Pink</div>
+          <div id="shade-details" class="shade-details">#FF69B4 • RGB(255, 105, 180)</div>
+        </div>
+      </div>
+
+      <!-- Main Action Buttons -->
+      <div class="panel-row">
+        <button id="btn-play" class="btn btn-primary"><span>⏸️</span> Pause</button>
+        <button id="btn-next" class="btn"><span>⏭️</span> Next Shade</button>
+        <button id="btn-reset-cam" class="btn"><span>🎯</span> Reset View</button>
+        <button id="btn-orbit" class="btn"><span>🎥</span> Auto Orbit</button>
+        <button id="btn-sound" class="btn"><span>🔇</span> Sound OFF</button>
+      </div>
+
+      <!-- Speed & Rotation Sliders -->
+      <div class="slider-control">
+        <label>Speed:</label>
+        <input id="speed-slider" type="range" min="1.0" max="15.0" step="0.5" value="5.5">
+        <span id="speed-val" class="slider-val">5.5x</span>
+      </div>
+
+      <div class="slider-control">
+        <label>Rotation:</label>
+        <input id="rot-slider" type="range" min="0.0" max="3.0" step="0.2" value="1.0">
+        <span id="rot-val" class="slider-val">1.0x</span>
+      </div>
+
+      <!-- Live Telemetry Bar -->
+      <div class="telemetry">
+        <span id="cubes-flown">0 FLOWN</span>
+        <span id="fps-counter">60 FPS</span>
+        <span id="status-badge" class="status-pill">FLYING • AUTO-LOOP</span>
+      </div>
+    </div>
+
+    <!-- Keyboard & Mouse Controls Legend -->
+    <div id="shortcuts-legend">
+      <div><span class="key">Space</span> Pause / Resume</div>
+      <div><span class="key">N</span> Next Pink Shade &bull; <span class="key">R</span> Reset View</div>
+      <div><span class="key">O</span> Auto Orbit &bull; <span class="key">M</span> Sound FX</div>
+      <div><span class="key">1-3</span> Speed Presets (Slow / Normal / Fast)</div>
+      <div style="margin-top: 4px; color: #ff85cb; font-size: 10px;">
+        Mouse: Left Drag (Orbit) &bull; Right Drag (Pan) &bull; Wheel (Zoom)
+      </div>
+    </div>
+  </body>
+</html>
